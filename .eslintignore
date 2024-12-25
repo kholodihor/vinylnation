@@ -1,0 +1,9 @@
+node_modules
+*.log
+.nuxt
+dist
+.output
+coverage
+*.md
+*.yml
+*.json

@@ -1,0 +1,44 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint --ext .js,.ts,.vue --ignore-path .eslintignore .",
+    "lint:fix": "eslint --ext .js,.ts,.vue --ignore-path .eslintignore . --fix",
+    "format": "prettier --write \"**/*.{js,ts,vue,css,scss,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,ts,vue,css,scss,json,md}\""
+  },
+  "dependencies": {
+    "@nuxt/icon": "^1.10.3",
+    "@nuxt/image": "^1.8.1",
+    "@nuxtjs/supabase": "^1.4.0",
+    "@nuxtjs/tailwindcss": "^6.12.1",
+    "@pinia-plugin-persistedstate/nuxt": "^1.2.1",
+    "@pinia/nuxt": "^0.5.5",
+    "@prisma/client": "^5.19.0",
+    "@stripe/stripe-js": "^4.4.0",
+    "nuxt": "^3.13.0",
+    "nuxt-icon": "^1.0.0-beta.7",
+    "nuxt-lodash": "^2.5.3",
+    "pinia": "^2.3.0",
+    "prisma": "^5.19.0",
+    "stripe": "^16.9.0",
+    "vue": "latest"
+  },
+  "devDependencies": {
+    "@nuxtjs/eslint-config-typescript": "^12.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.2",
+    "@typescript-eslint/parser": "^8.18.2",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-nuxt": "^4.0.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-vue": "^9.32.0",
+    "prettier": "^3.4.2"
+  }
+}
