@@ -1,30 +1,42 @@
 <template>
   <MainLayout>
-    <HomeIntro />
-    <div class="mt-4 max-w-[1300px] mx-auto px-2">
-      <div v-if="products" class="flex flex-wrap justify-center gap-6">
-        <ProductCard v-for="product in products" :key="product.id" :product="product" />
-      </div>
-      <SellProposal />
+    <Intro />
+    <div class="mt-4 max-w-[1200px] mx-auto px-2">
+      <ClientOnly>
+        <div
+          v-if="products"
+          class="grid xl:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 mb-6"
+        >
+          <div v-for="product in products" :key="product.id">
+            <ProductComponent :product="product" />
+          </div>
+        </div>
+        <div
+          v-else
+          class="grid xl:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 mb-6"
+        >
+          <Skeleton v-for="(item, index) in Array(8)" :key="index" />
+        </div>
+      </ClientOnly>
+      <Proposal />
     </div>
   </MainLayout>
 </template>
 
 <script setup lang="ts">
+  import MainLayout from '~/layouts/MainLayout.vue'
   import type { IProduct } from '~/types'
   import { useUserStore } from '~/stores/user'
-  import ProductCard from '~/components/products/ProductCard.vue'
-  import HomeIntro from '~/components/home/HomeIntro.vue'
-  import SellProposal from '~/components/home/SellProposal.vue'
-  import MainLayout from '~/layouts/MainLayout.vue'
 
   const userStore = useUserStore()
-  const products = ref<IProduct[]>([])
+  const products = ref<IProduct[] | null>(null)
 
-  useAsyncData('products', () =>
-    $fetch('/api/prisma/get-all-products').then((res) => {
-      products.value = res.products
-      setTimeout(() => (userStore.isLoading = false), 1500)
+  useAsyncData('products', async () => {
+    await $fetch('/api/prisma/get-all-products').then((res) => {
+      products.value = res
+      setTimeout(() => (userStore.isLoading = false), 1000)
     })
-  )
+  })
 </script>
+
+<style scoped></style>

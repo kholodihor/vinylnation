@@ -1,11 +1,7 @@
-export default defineNuxtRouteMiddleware(async (to) => {
-  const user = await useAuthUser()
+export default defineNuxtRouteMiddleware((_, to) => {
+  const user = useSupabaseUser()
 
-  // List of routes that require authentication
-  const protectedRoutes = ['/checkout', '/orders', '/address', '/success']
-
-  // Check if the route requires authentication
-  if (protectedRoutes.includes(to.path) && !user) {
+  if (!user.value && to.fullPath === '/checkout') {
     return navigateTo('/auth')
   }
 })

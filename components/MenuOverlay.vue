@@ -38,7 +38,7 @@
         </li>
 
         <li
-          v-if="user.value"
+          v-if="user"
           class="relative flex items-center justify-between py-2.5 border-b px-3 hover:bg-gray-100 cursor-pointer"
           @click="signOut()"
         >
@@ -64,11 +64,10 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue'
   import { useUserStore } from '~/stores/user'
   const userStore = useUserStore()
   const client = useSupabaseClient()
-  const user = ref(await useAuthUser())
+  const user = useSupabaseUser()
 
   const goTo = (url) => {
     userStore.isMenuOverlay = false

@@ -111,17 +111,16 @@
   import MainLayout from '~/layouts/MainLayout.vue'
   import type { IAddress } from '~/types'
   import { useUserStore } from '~/stores/user'
-  import { useAuthUser } from '~/composables/useAuthUser'
 
   const userStore = useUserStore()
-  const user = ref(await useAuthUser())
+  const user = useSupabaseUser()
   const route = useRoute()
 
   definePageMeta({ middleware: 'auth' })
 
   let stripe: any = null
   let clientSecret: string | null = ''
-  let elements: any = null
+  let elements = null
   let card: any = null
   const total = ref(0)
 
@@ -141,9 +140,6 @@
   })
 
   onMounted(() => {
-    if (!user.value) {
-      return navigateTo('/auth')
-    }
     isProcessing.value = true
     userStore.checkout.forEach((item) => {
       total.value += item.price
@@ -152,7 +148,7 @@
 
   watchEffect(() => {
     if (route.fullPath === '/checkout' && !user.value) {
-      navigateTo('/auth')
+      return navigateTo('/auth')
     }
   })
 
@@ -206,34 +202,21 @@
     isProcessing.value = false
   }
 
-  const confirmPayment = () => {
-    if (stripe.value) {
-      return stripe.value.confirmPayment({
-        elements: elements.value,
-        confirmParams: {
-          return_url: 'http://localhost:3000/success',
-        },
-      })
-    }
-  }
-
-  const pay = () => {
+  const pay = async () => {
     if (!currentAddress.value) {
       showError('Please add shipping address')
       return
     }
     isProcessing.value = true
 
-    confirmPayment()
-
-    const result = stripe.confirmCardPayment(clientSecret, {
+    const result = await stripe.confirmCardPayment(clientSecret, {
       payment_method: { card },
     })
     if (result.error) {
       showError(result.error.message)
       isProcessing.value = false
     } else {
-      createOrder(result.paymentIntent.id)
+      await createOrder(result.paymentIntent.id)
       userStore.cart = []
       userStore.checkout = []
       setTimeout(() => {

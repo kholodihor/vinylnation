@@ -1,67 +1,113 @@
 <template>
   <MainLayout>
-    <div class="max-w-[1200px] mx-auto p-2 min-h-[75vh] mt-[5vh]">
-      <div v-if="userStore.cart.length === 0" class="h-[500px] flex items-center justify-center">
-        <div class="pt-10">
-          <img class="mx-auto" width="250" src="/cart-empty.png" />
-
-          <div class="text-xl text-center mt-4">No items yet</div>
-
-          <div v-if="!user" class="flex text-center">
-            <NuxtLink
-              to="/auth"
-              class="bg-[#FD374F] w-full text-white text-[21px] font-semibold p-1.5 rounded-full my-4"
-            >
-              Sign in
-            </NuxtLink>
-          </div>
-        </div>
-      </div>
+    <div class="max-w-[1200px] mx-auto px-3 sm:px-4 py-6 sm:py-8 min-h-[75vh]">
       <div
-        v-else-if="userStore.cart.length !== 0"
-        class="md:flex gap-4 justify-between mx-auto w-full"
+        v-if="!userStore.cart.length"
+        class="flex flex-col items-center justify-center min-h-[60vh] text-center"
       >
+        <img
+          class="w-48 sm:w-64 md:w-[250px] mb-6 animate-float"
+          src="/cart-empty.png"
+          alt="Empty Cart"
+        />
+
+        <h2 class="text-lg sm:text-xl font-medium text-gray-800 mb-2">Your cart is empty</h2>
+        <p class="text-sm text-gray-500 mb-6">
+          Looks like you haven't added any vinyls to your cart yet
+        </p>
+
+        <div v-if="!user" class="w-full max-w-xs">
+          <NuxtLink
+            to="/auth"
+            class="block w-full bg-[#f8d210] hover:bg-[#e5c20f] text-black font-medium text-lg sm:text-xl py-2.5 px-6 rounded-lg transition-colors"
+          >
+            Sign in to continue
+          </NuxtLink>
+        </div>
+        <NuxtLink
+          to="/main"
+          class="mt-4 text-sm text-gray-600 hover:text-[#f8d210] transition-colors"
+        >
+          ← Back to shopping
+        </NuxtLink>
+      </div>
+
+      <div v-else class="md:flex gap-6 justify-between mx-auto w-full">
         <div class="md:w-[65%]">
           <div class="bg-white rounded-lg p-4">
-            <div class="text-2xl font-bold mb-2">Shopping Cart ({{ userStore.cart.length }})</div>
+            <div class="flex items-center justify-between">
+              <h1 class="text-xl sm:text-2xl font-bold">
+                Shopping Cart ({{ userStore.cart.length }})
+              </h1>
+              <NuxtLink
+                to="/main"
+                class="text-sm text-gray-600 hover:text-[#f8d210] transition-colors hidden sm:block"
+              >
+                Continue Shopping
+              </NuxtLink>
+            </div>
           </div>
-          <div id="Items" class="bg-white rounded-lg p-4 mt-4">
+
+          <div class="bg-white rounded-lg p-2 sm:p-4 mt-4">
             <div v-for="product in userStore.cart" :key="product.id">
               <CartItem
                 :product="product"
                 :selected-array="selectedArray"
                 @selected-radio="selectedRadioFunc"
+                @remove-from-cart="removeFromCart"
               />
             </div>
           </div>
+
+          <NuxtLink
+            to="/main"
+            class="mt-4 text-sm text-gray-600 hover:text-[#f8d210] transition-colors block sm:hidden text-center"
+          >
+            Continue Shopping
+          </NuxtLink>
         </div>
 
-        <div class="md:hidden block my-4" />
-        <div class="md:w-[35%]">
+        <div class="md:w-[35%] mt-6 md:mt-0">
           <div class="bg-white rounded-lg p-4">
-            <div class="text-2xl font-extrabold mb-2">Summary</div>
-            <div class="flex items-center justify-between my-4">
-              <div class="font-semibold">Total</div>
-              <div class="text-2xl font-semibold">
-                $ <span class="font-extrabold">{{ totalPriceComputed }}</span>
+            <h2 class="text-xl sm:text-2xl font-bold mb-4">Order Summary</h2>
+
+            <div class="space-y-3">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">Subtotal</span>
+                <span class="font-medium">${{ totalPriceComputed }}</span>
               </div>
-            </div>
-            <button
-              class="flex items-center justify-center bg-[#f8d210] w-full text-black border border-black text-[21px] font-semibold p-1.5 rounded-lg mt-4"
-              @click="goToCheckout"
-            >
-              Checkout
-            </button>
-          </div>
-          <div class="bg-white rounded-lg p-4 mt-4">
-            <div class="text-lg font-semibold mb-2">Payment methods</div>
-            <div class="flex items-center justify-start gap-8 my-4">
-              <div v-for="(card, index) in cards" :key="index">
-                <img class="h-6" :src="card" />
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">Shipping</span>
+                <span class="text-[#009A66] font-medium">Free</span>
+              </div>
+              <div class="border-t pt-3">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold">Total</span>
+                  <div class="text-xl sm:text-2xl font-bold">${{ totalPriceComputed }}</div>
+                </div>
               </div>
             </div>
 
-            <div class="border-b" />
+            <button
+              class="w-full bg-[#f8d210] hover:bg-[#e5c20f] text-black font-medium text-lg sm:text-xl py-3 px-6 rounded-lg mt-6 transition-colors flex items-center justify-center gap-2"
+              @click="goToCheckout"
+            >
+              <span>Checkout</span>
+              <Icon name="material-symbols:arrow-forward-rounded" size="24" />
+            </button>
+          </div>
+
+          <div class="bg-white rounded-lg p-4 mt-4">
+            <h3 class="text-base sm:text-lg font-semibold mb-4">We Accept</h3>
+            <div class="flex items-center flex-wrap gap-4">
+              <img
+                v-for="(card, index) in cards"
+                :key="index"
+                class="h-6 sm:h-7"
+                :src="card"
+                :alt="card.split('/')[1].split('.')[0]"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -73,9 +119,9 @@
   import MainLayout from '~/layouts/MainLayout.vue'
   import type { IProduct } from '~/types'
   import { useUserStore } from '~/stores/user'
-  import { useAuthUser } from '~/composables/useAuthUser'
+
   const userStore = useUserStore()
-  const user = ref(await useAuthUser())
+  const user = useSupabaseUser()
   const selectedArray = ref<IProduct[]>([])
 
   onMounted(() => {
@@ -103,22 +149,37 @@
       return
     }
     selectedArray.value.forEach((item, index) => {
-      if (e.id !== item.id) {
-        selectedArray.value.push(e)
-      } else {
+      if (item.id === e.id) {
         selectedArray.value.splice(index, 1)
+      } else {
+        selectedArray.value.push(e)
       }
     })
   }
 
   const goToCheckout = () => {
-    const ids: number[] = []
-    userStore.checkout = []
-    selectedArray.value.forEach((item) => ids.push(item.id))
-    const res = userStore.cart.filter((item) => {
-      return ids.includes(item.id)
+    const ids = []
+    selectedArray.value.forEach((item) => {
+      ids.push(item.id)
     })
-    res.forEach((item) => userStore.checkout.push(item))
-    return navigateTo('/checkout')
+    navigateTo('/checkout')
   }
 </script>
+
+<style scoped>
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
+</style>

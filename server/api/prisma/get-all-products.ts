@@ -10,8 +10,7 @@ export default defineEventHandler(async (event) => {
     })
 
     const products = await prisma.products.findMany()
-    console.log('Products fetched:', products)
-    return { products }
+    return products
   } catch (error) {
     console.error('Database error:', error)
     throw createError({

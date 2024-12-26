@@ -64,7 +64,7 @@
   import { useUserStore } from '~/stores/user'
 
   const userStore = useUserStore()
-  const user = ref(await useAuthUser())
+  const user = useSupabaseUser()
 
   const currentAddress = ref<IAddress | null>(null)
   const error = ref<IError | null>(null)
