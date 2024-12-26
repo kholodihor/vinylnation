@@ -24,18 +24,24 @@
 </template>
 
 <script setup lang="ts">
+  import { onMounted } from 'vue'
   import MainLayout from '~/layouts/MainLayout.vue'
   import type { IProduct } from '~/types'
   import { useUserStore } from '~/stores/user'
+  import { useProductsStore } from '~/stores/products'
 
   const userStore = useUserStore()
-  const products = ref<IProduct[] | null>(null)
+  const productsStore = useProductsStore()
+  const products = ref<IProduct[]>([])
 
-  useAsyncData('products', async () => {
-    await $fetch('/api/prisma/get-all-products').then((res) => {
-      products.value = res
-      setTimeout(() => (userStore.isLoading = false), 1000)
-    })
+  onMounted(async () => {
+    try {
+      const data = await $fetch<IProduct[]>('/api/prisma/get-all-products')
+      products.value = data
+      productsStore.setProducts(data)
+    } finally {
+      userStore.isLoading = false
+    }
   })
 </script>
 

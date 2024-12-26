@@ -24,10 +24,7 @@
             Sign in to continue
           </NuxtLink>
         </div>
-        <NuxtLink
-          to="/main"
-          class="mt-4 text-sm text-gray-600 hover:text-[#f8d210] transition-colors"
-        >
+        <NuxtLink to="/" class="mt-4 text-sm text-gray-600 hover:text-[#f8d210] transition-colors">
           ← Back to shopping
         </NuxtLink>
       </div>
@@ -40,7 +37,7 @@
                 Shopping Cart ({{ userStore.cart.length }})
               </h1>
               <NuxtLink
-                to="/main"
+                to="/"
                 class="text-sm text-gray-600 hover:text-[#f8d210] transition-colors hidden sm:block"
               >
                 Continue Shopping
@@ -60,7 +57,7 @@
           </div>
 
           <NuxtLink
-            to="/main"
+            to="/"
             class="mt-4 text-sm text-gray-600 hover:text-[#f8d210] transition-colors block sm:hidden text-center"
           >
             Continue Shopping
@@ -116,6 +113,7 @@
 </template>
 
 <script setup lang="ts">
+  import { navigateTo } from 'nuxt/app'
   import MainLayout from '~/layouts/MainLayout.vue'
   import type { IProduct } from '~/types'
   import { useUserStore } from '~/stores/user'
@@ -144,25 +142,35 @@
   })
 
   const selectedRadioFunc = (e: IProduct) => {
-    if (!selectedArray.value.length) {
+    const index = selectedArray.value.findIndex((item) => item.id === e.id)
+    if (index === -1) {
       selectedArray.value.push(e)
-      return
+    } else {
+      selectedArray.value.splice(index, 1)
     }
-    selectedArray.value.forEach((item, index) => {
-      if (item.id === e.id) {
-        selectedArray.value.splice(index, 1)
-      } else {
-        selectedArray.value.push(e)
-      }
-    })
   }
 
-  const goToCheckout = () => {
-    const ids = []
-    selectedArray.value.forEach((item) => {
-      ids.push(item.id)
+  const removeFromCart = (product: IProduct) => {
+    userStore.cart = userStore.cart.filter((item) => item.id !== product.id)
+    // Also remove from selected array if it was selected
+    selectedArray.value = selectedArray.value.filter((item) => item.id !== product.id)
+  }
+
+  const goToCheckout = async () => {
+    if (!selectedArray.value.length) {
+      alert('Please select at least one item to checkout')
+      return
+    }
+    const ids = selectedArray.value.map((item) => item.id)
+    console.log(ids)
+    // Set selected items as checkout items
+    userStore.checkout = [...selectedArray.value]
+    await navigateTo({
+      path: '/checkout',
+      query: {
+        items: ids.join(','),
+      },
     })
-    navigateTo('/checkout')
   }
 </script>
 

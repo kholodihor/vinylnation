@@ -15,5 +15,7 @@ export const useUserStore = defineStore('user', {
     cart: [],
     checkout: [],
   }),
-  // persist: true,
+  persist: {
+    paths: ['cart', 'checkout', 'isMenuOverlay'],
+  },
 })
