@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     take: 5,
     where: {
       title: {
-        contains: event?.context?.params?.id,
+        contains: event?.context?.params?.name,
         mode: 'insensitive',
       },
     },

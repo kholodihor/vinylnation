@@ -28,7 +28,8 @@
     "pinia": "^2.3.0",
     "prisma": "^5.19.0",
     "stripe": "^16.9.0",
-    "vue": "latest"
+    "vue": "latest",
+    "vue3-lottie": "^3.3.1"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config-typescript": "^12.1.0",

@@ -1,5 +1,6 @@
 <template>
-  <MainLayout>
+  <StartLoader v-if="startLoading" />
+  <MainLayout v-else>
     <Intro />
     <div class="mt-4 max-w-[1200px] mx-auto px-2">
       <ClientOnly>
@@ -29,16 +30,19 @@
   import type { IProduct } from '~/types'
   import { useUserStore } from '~/stores/user'
   import { useProductsStore } from '~/stores/products'
+  import StartLoader from '~/components/StartLoader.vue'
 
   const userStore = useUserStore()
   const productsStore = useProductsStore()
   const products = ref<IProduct[]>([])
+  const startLoading = ref(true)
 
   onMounted(async () => {
     try {
       const data = await $fetch<IProduct[]>('/api/prisma/get-all-products')
       products.value = data
       productsStore.setProducts(data)
+      startLoading.value = false
     } finally {
       userStore.isLoading = false
     }
