@@ -1,7 +1,7 @@
 <template>
   <div class="h-full min-h-[60vh] w-full p-2 lg:flex gap-2 mb-6">
     <div class="p-2">
-      <img src="/sellvinyl.jpg" alt="" />
+      <img src="/sellvinyl.webp" alt="" />
     </div>
     <div class="p-2 flex flex-col justify-evenly gap-2">
       <p class="mb-4">

@@ -1,7 +1,7 @@
 <template>
   <StartLoader v-if="startLoading" />
   <MainLayout v-else>
-    <Intro />
+    <Hero />
     <div class="mt-4 max-w-[1200px] mx-auto px-2">
       <ClientOnly>
         <div
@@ -31,6 +31,7 @@
   import { useUserStore } from '~/stores/user'
   import { useProductsStore } from '~/stores/products'
   import StartLoader from '~/components/StartLoader.vue'
+  import Hero from '~/components/Hero.vue'
 
   const userStore = useUserStore()
   const productsStore = useProductsStore()
