@@ -50,12 +50,6 @@
           </p>
         </div>
       </div>
-
-      <div class="mt-8 text-center">
-        <NuxtLink to="/" class="text-sm text-gray-600 hover:text-[#f8d210] transition-colors">
-          ← Back to home
-        </NuxtLink>
-      </div>
     </div>
   </div>
 </template>
