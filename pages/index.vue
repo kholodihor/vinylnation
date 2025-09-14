@@ -18,6 +18,11 @@
         >
           <Skeleton v-for="(item, index) in Array(8)" :key="index" />
         </div>
+
+        <!-- Vapi demo: Start/End voice call and show assistant speech -->
+        <div class="my-6">
+          <VapiCallButton />
+        </div>
       </ClientOnly>
       <Proposal />
     </div>
@@ -32,6 +37,7 @@
   import { useProductsStore } from '~/stores/products'
   import StartLoader from '~/components/StartLoader.vue'
   import Hero from '~/components/Hero.vue'
+  import VapiCallButton from '~/components/VapiCallButton.vue'
 
   const userStore = useUserStore()
   const productsStore = useProductsStore()

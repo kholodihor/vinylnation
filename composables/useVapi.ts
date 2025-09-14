@@ -1,0 +1,62 @@
+import type Vapi from '@vapi-ai/web'
+
+export function useVapi() {
+  const { $vapi } = useNuxtApp() as unknown as { $vapi: Vapi }
+  const config = useRuntimeConfig()
+
+  const isCalling = useState<boolean>('vapi:isCalling', () => false)
+  const assistantText = useState<string>('vapi:assistantText', () => '')
+
+  // Ensure listeners are only attached once per app lifecycle
+  const listenersAttached = useState<boolean>('vapi:listenersAttached', () => false)
+
+  if (!listenersAttached.value) {
+    // Update isCalling on start/stop (SDK event names use dashes)
+    $vapi.on('call-start', () => {
+      isCalling.value = true
+    })
+    $vapi.on('call-end', () => {
+      isCalling.value = false
+    })
+
+    // Capture assistant speech text
+    $vapi.on('speech-end', () => { })
+
+    // Capture messages for assistant content
+    $vapi.on('message', (message: any) => {
+      const text = typeof message?.content === 'string' ? message.content : ''
+      if (text) assistantText.value = text
+    })
+
+    listenersAttached.value = true
+  }
+
+  const start = async (assistantId?: string) => {
+    const id = assistantId || (config.public as any).vapiAssistantId
+    if (!id) {
+      throw new Error('Missing Vapi assistant ID. Set NUXT_PUBLIC_VAPI_ASSISTANT_ID in your .env')
+    }
+    await $vapi.start(id)
+  }
+
+  const stop = async () => {
+    await $vapi.stop()
+  }
+
+  const toggleCall = async (assistantId?: string) => {
+    if ((($vapi as any).isCalling ?? false) || isCalling.value) {
+      await stop()
+    } else {
+      await start(assistantId)
+    }
+  }
+
+  return {
+    vapi: $vapi,
+    isCalling,
+    assistantText,
+    start,
+    stop,
+    toggleCall,
+  }
+}

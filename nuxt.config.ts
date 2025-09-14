@@ -28,6 +28,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       stripePk: process.env.STRIPE_PK_KEY,
+      // Vapi public runtime values (client-exposed)
+      vapiToken: process.env.NUXT_PUBLIC_VAPI_TOKEN,
+      vapiAssistantId: process.env.NUXT_PUBLIC_VAPI_ASSISTANT_ID,
     },
   },
 
