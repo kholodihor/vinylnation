@@ -25,6 +25,11 @@
     window.addEventListener('resize', function () {
       windowWidth.value = window.innerWidth
     })
+
+    // Set loading to false after a short delay to allow components to mount
+    setTimeout(() => {
+      userStore.isLoading = false
+    }, 500)
   })
 
   watch(
@@ -40,6 +45,12 @@
     () => route.fullPath,
     () => {
       userStore.isLoading = true
+      // Set loading to false after route change completes
+      nextTick(() => {
+        setTimeout(() => {
+          userStore.isLoading = false
+        }, 300)
+      })
     }
   )
 </script>

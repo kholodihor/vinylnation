@@ -1,6 +1,6 @@
 <template>
   <StartLoader v-if="startLoading" />
-  <MainLayout v-else>
+  <div v-else>
     <Hero />
     <div class="mt-4 max-w-[1200px] mx-auto px-2 w-full xl:max-w-[1600px]">
       <ClientOnly>
@@ -18,26 +18,19 @@
         >
           <Skeleton v-for="(item, index) in Array(8)" :key="index" />
         </div>
-
-        <!-- Vapi demo: Start/End voice call and show assistant speech -->
-        <div class="my-6">
-          <VapiCallButton />
-        </div>
       </ClientOnly>
       <Proposal />
     </div>
-  </MainLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
   import { onMounted } from 'vue'
-  import MainLayout from '~/layouts/MainLayout.vue'
   import type { IProduct } from '~/types'
   import { useUserStore } from '~/stores/user'
   import { useProductsStore } from '~/stores/products'
   import StartLoader from '~/components/StartLoader.vue'
   import Hero from '~/components/Hero.vue'
-  import VapiCallButton from '~/components/VapiCallButton.vue'
 
   const userStore = useUserStore()
   const productsStore = useProductsStore()

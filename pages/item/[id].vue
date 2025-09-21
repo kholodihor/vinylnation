@@ -1,5 +1,5 @@
 <template>
-  <MainLayout>
+  <div>
     <div class="max-w-[1200px] mx-auto px-3 sm:px-4 py-6 sm:py-8">
       <div class="md:flex gap-6 justify-between mx-auto w-full">
         <div class="md:w-[45%]">
@@ -92,11 +92,10 @@
         </div>
       </div>
     </div>
-  </MainLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
-  import MainLayout from '~/layouts/MainLayout.vue'
   import type { IProduct } from '~/types'
   import { useUserStore } from '~/stores/user'
 

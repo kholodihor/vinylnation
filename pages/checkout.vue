@@ -1,5 +1,5 @@
 <template>
-  <MainLayout>
+  <div>
     <div class="max-w-[1200px] mx-auto px-4 py-8">
       <h1 class="text-2xl font-bold mb-8">Checkout</h1>
 
@@ -130,12 +130,11 @@
         </div>
       </div>
     </div>
-  </MainLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
   import { loadStripe } from '@stripe/stripe-js'
-  import MainLayout from '~/layouts/MainLayout.vue'
   import type { IAddress } from '~/types'
   import { useUserStore } from '~/stores/user'
 

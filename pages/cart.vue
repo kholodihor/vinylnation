@@ -1,5 +1,5 @@
 <template>
-  <MainLayout>
+  <div>
     <div class="max-w-[1200px] mx-auto px-3 sm:px-4 py-6 sm:py-8 min-h-[75vh]">
       <div
         v-if="!userStore.cart.length"
@@ -109,12 +109,11 @@
         </div>
       </div>
     </div>
-  </MainLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
   import { navigateTo } from 'nuxt/app'
-  import MainLayout from '~/layouts/MainLayout.vue'
   import type { IProduct } from '~/types'
   import { useUserStore } from '~/stores/user'
 

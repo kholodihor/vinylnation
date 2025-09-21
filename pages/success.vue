@@ -1,5 +1,5 @@
 <template>
-  <MainLayout>
+  <div>
     <div id="SuccessPage" class="mt-4 max-w-[1200px] mx-auto px-2 min-h-[50vh]">
       <div class="bg-white w-full p-6 min-h-[150px]">
         <div class="flex items-center text-xl">
@@ -9,11 +9,10 @@
         <p class="text-sm pl-[50px]">Thank you! We've received your payment.</p>
       </div>
     </div>
-  </MainLayout>
+  </div>
 </template>
 
 <script setup>
-  import MainLayout from '~/layouts/MainLayout.vue'
   import { useUserStore } from '~/stores/user'
   const userStore = useUserStore()
 

@@ -1,5 +1,5 @@
 <template>
-  <MainLayout>
+  <div>
     <div id="OrdersPage" class="mt-4 max-w-[1200px] mx-auto px-2 min-h-[50vh]">
       <div class="bg-white w-full p-6 min-h-[150px]">
         <div class="flex items-center text-xl">
@@ -35,11 +35,10 @@
         <div v-else class="flex items-center justify-center">You have no order history</div>
       </div>
     </div>
-  </MainLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
-  import MainLayout from '~/layouts/MainLayout.vue'
   import type { IOrder } from '~/types'
   import { useUserStore } from '~/stores/user'
 

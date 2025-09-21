@@ -1,5 +1,5 @@
 <template>
-  <MainLayout>
+  <div>
     <div class="max-w-[600px] mx-auto px-4 py-6 sm:py-8">
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div class="mb-6">
@@ -86,11 +86,10 @@
         </form>
       </div>
     </div>
-  </MainLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
-  import MainLayout from '~/layouts/MainLayout.vue'
   import type { IError } from '~/types'
   import { useUserStore } from '~/stores/user'
 

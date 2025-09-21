@@ -15,7 +15,7 @@ export default defineNuxtConfig({
         redirectOptions: {
           login: '/auth',
           callback: '/auth',
-          exclude: ['/', '/products', '/product/*'],
+          exclude: ['/', '/products', '/product/*', '/auth'],
         },
       },
     ],
@@ -48,4 +48,8 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2024-12-25',
+
+  devServer: {
+    port: 3001,
+  },
 })
