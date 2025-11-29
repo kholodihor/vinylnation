@@ -17,7 +17,10 @@ export default defineEventHandler(async (event) => {
     const limit = query.limit ? Math.min(Number(query.limit), 100) : 20
     const offset = query.offset ? Number(query.offset) : 0
     const sort = typeof query.sort === 'string' ? query.sort : 'created_at'
-    const order = (typeof query.order === 'string' ? query.order : 'desc').toLowerCase() === 'asc' ? 'asc' : 'desc'
+    const order =
+      (typeof query.order === 'string' ? query.order : 'desc').toLowerCase() === 'asc'
+        ? 'asc'
+        : 'desc'
 
     const where: any = {}
 

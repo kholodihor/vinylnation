@@ -33,3 +33,29 @@ export interface IOrder {
   createdAt: string
   orderItem: IProduct[]
 }
+
+// Vapi API Response Types
+export interface VapiErrorResponse {
+  error: string
+  details?: string
+}
+
+export interface VapiSuccessResponse {
+  success: boolean
+  data: {
+    query: string
+    results: any[]
+    summary: {
+      message: string
+      albums?: any[]
+      suggestions?: string[]
+    }
+  }
+  message: string
+}
+
+export interface VapiCatchResponse {
+  error: string
+}
+
+export type VapiSearchResponse = VapiErrorResponse | VapiSuccessResponse | VapiCatchResponse

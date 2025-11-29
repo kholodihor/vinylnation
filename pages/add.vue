@@ -103,6 +103,7 @@
     imageUrl: '',
     description: '',
     price: '',
+    quantity: 3,
   })
 
   onBeforeMount(() => {

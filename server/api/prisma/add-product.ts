@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
       url: body.url,
       description: body.description,
       price: body.price,
+      quantity: body.quantity,
     },
   })
 

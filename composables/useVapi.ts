@@ -55,6 +55,29 @@ export function useVapi() {
     }
   }
 
+  const searchAlbums = async (query: string) => {
+    try {
+      const response = await $fetch('/api/vapi/function', {
+        method: 'POST',
+        body: { query }
+      })
+      return response
+    } catch (error) {
+      console.error('Product search error:', error)
+      return { error: 'Failed to search products' }
+    }
+  }
+
+  const getInventory = async () => {
+    try {
+      const response = await $fetch('/api/vapi/inventory')
+      return response
+    } catch (error) {
+      console.error('Inventory error:', error)
+      return { error: 'Failed to get inventory' }
+    }
+  }
+
   return {
     vapi: $vapi,
     isCalling,
@@ -62,5 +85,7 @@ export function useVapi() {
     start,
     stop,
     toggleCall,
+    searchAlbums,
+    getInventory,
   }
 }
