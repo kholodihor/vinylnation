@@ -161,7 +161,6 @@
       return
     }
     const ids = selectedArray.value.map((item) => item.id)
-    console.log(ids)
     // Set selected items as checkout items
     userStore.checkout = [...selectedArray.value]
     await navigateTo({

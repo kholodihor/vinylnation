@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { sendKafkaEvent } from '../../utils/kafka'
 
 const prisma = new PrismaClient()
 
@@ -18,14 +19,31 @@ export default defineEventHandler(async (event) => {
 
     console.log('Vapi assistant query:', userQuery)
 
+    const assistantTopic = process.env.KAFKA_ASSISTANT_TOPIC || 'assistant'
+
+    await sendKafkaEvent(assistantTopic, null, {
+      type: 'assistant.query',
+      query: userQuery,
+      timestamp: Date.now(),
+    })
+
     // Search products with improved logic
     const results = await searchProductsImproved(userQuery)
 
-    return {
+    const response = {
       query: userQuery,
       results,
       summary: generateResponseSummary(results, userQuery),
     }
+
+    await sendKafkaEvent(assistantTopic, null, {
+      type: 'assistant.results',
+      query: userQuery,
+      resultCount: results.length,
+      timestamp: Date.now(),
+    })
+
+    return response
   } catch (error) {
     console.error('Vapi search error:', error)
     throw createError({ statusCode: 500, message: 'Error searching albums' })
@@ -228,9 +246,9 @@ function generateResponseSummary(results: any[], originalQuery: string) {
   const priceRange =
     results.length > 0
       ? {
-          min: Math.min(...prices),
-          max: Math.max(...prices),
-        }
+        min: Math.min(...prices),
+        max: Math.max(...prices),
+      }
       : null
 
   console.log('Price calculation debug:', { prices, priceRange })
