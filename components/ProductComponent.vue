@@ -5,10 +5,15 @@
   >
     <NuxtLink :to="`/item/${product.id}`" class="block">
       <div class="relative aspect-square overflow-hidden">
-        <img
+        <NuxtImg
           :src="product.url"
           :alt="product.title"
           class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+          loading="lazy"
+          format="webp"
+          sizes="xs:100vw sm:50vw md:33vw lg:25vw xl:20vw"
+          :width="400"
+          :height="400"
         />
         <div
           class="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300"
