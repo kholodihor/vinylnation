@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Nuxt.js-3.13.0-00DC82" alt="Nuxt.js Version">
-  <img src="https://img.shields.io/badge/Vue-latest-4FC08D" alt="Vue Version">
+  <img src="https://img.shields.io/badge/Vue-3.5-4FC08D" alt="Vue Version">
   <img src="https://img.shields.io/badge/Prisma-5.19.0-2D3748" alt="Prisma Version">
   <img src="https://img.shields.io/badge/Stripe-16.9.0-008CDD" alt="Stripe Version">
 </p>
@@ -36,7 +36,7 @@ VinylNation is a modern e-commerce platform dedicated to vinyl record enthusiast
 
 ### Prerequisites
 
-- Node.js (v16 or later)
+- Node.js 18.x or later
 - npm, yarn, pnpm, or bun
 
 ### Installation
@@ -60,12 +60,8 @@ VinylNation is a modern e-commerce platform dedicated to vinyl record enthusiast
 
 3. Set up environment variables
    ```bash
-   # Create a .env file with the following variables
-   DATABASE_URL="your-database-connection-string"
-   STRIPE_SECRET_KEY="your-stripe-secret-key"
-   STRIPE_WEBHOOK_SECRET="your-stripe-webhook-secret"
-   SUPABASE_URL="your-supabase-url"
-   SUPABASE_KEY="your-supabase-key"
+   cp .env.example .env
+   # then fill in DATABASE_URL, SUPABASE_*, STRIPE_* and (optionally) VAPI/KAFKA values
    ```
 
 4. Set up the database
@@ -76,7 +72,7 @@ VinylNation is a modern e-commerce platform dedicated to vinyl record enthusiast
 
 ### Development
 
-Start the development server on `http://localhost:3000`:
+Start the development server on `http://localhost:3001`:
 
 ```bash
 npm run dev
@@ -139,7 +135,9 @@ npm run format:check
 - `/pages` - Application pages and routes
 - `/prisma` - Database schema and migrations
 - `/public` - Static assets
-- `/server` - API endpoints and server middleware
+- `/server/api` - API endpoints (`products`, `address`, `orders`, `stripe`, `vapi`)
+- `/server/utils` - Shared server helpers (Prisma client, auth, Stripe, Kafka, search)
+- `/scripts` - Manual scripts for exercising the Vapi endpoints against a running dev server
 - `/stores` - Pinia state stores
 - `/types` - TypeScript type definitions
 

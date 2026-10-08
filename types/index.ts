@@ -9,16 +9,25 @@ export interface IProduct {
   description: string
   genre: string
   url: string
+  /** Price in cents */
   price: number
+  quantity: number
 }
 
 export interface IAddress {
   id: number
   name: string
   address: string
-  zipCode: string
+  zipcode: string
   city: string
   country: string
+}
+
+export interface IOrderItem {
+  id: number
+  orderId: number
+  productId: number
+  product: IProduct
 }
 
 export interface IOrder {
@@ -27,14 +36,28 @@ export interface IOrder {
   stripeId: string
   name: string
   address: string
-  zipCode: string
+  zipcode: string
   city: string
   country: string
-  createdAt: string
-  orderItem: IProduct[]
+  created_at: string
+  orderItem: IOrderItem[]
 }
 
 // Vapi API Response Types
+export interface IAssistantAlbum {
+  title: string
+  details: string
+  price: string
+  availability: string
+  description: string
+}
+
+export interface IAssistantSummary {
+  message: string
+  albums: IAssistantAlbum[]
+  suggestions: string[]
+}
+
 export interface VapiErrorResponse {
   error: string
   details?: string
@@ -44,18 +67,10 @@ export interface VapiSuccessResponse {
   success: boolean
   data: {
     query: string
-    results: any[]
-    summary: {
-      message: string
-      albums?: any[]
-      suggestions?: string[]
-    }
+    results: unknown[]
+    summary: IAssistantSummary
   }
   message: string
 }
 
-export interface VapiCatchResponse {
-  error: string
-}
-
-export type VapiSearchResponse = VapiErrorResponse | VapiSuccessResponse | VapiCatchResponse
+export type VapiSearchResponse = VapiErrorResponse | VapiSuccessResponse

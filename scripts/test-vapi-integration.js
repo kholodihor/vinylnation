@@ -1,5 +1,5 @@
 // Simple test script to verify Vapi integration with real data
-// Run with: node test-vapi-integration.js
+// Run with: node scripts/test-vapi-integration.js
 
 const testQueries = [
   'What products do you have?',
@@ -9,13 +9,13 @@ const testQueries = [
   'What are your newest arrivals?',
 ]
 
-export async function testVapiEndpoint(query) {
+async function testVapiEndpoint(query) {
   try {
     console.log(`\n🔍 Testing query: "${query}"`)
     console.log('='.repeat(50))
 
     // Test the function endpoint (what Vapi calls)
-    const response = await fetch('http://localhost:3000/api/vapi/function', {
+    const response = await fetch('http://localhost:3001/api/vapi/function', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ async function testInventoryEndpoint() {
     console.log(`\n📋 Testing inventory endpoint`)
     console.log('='.repeat(50))
 
-    const response = await fetch('http://localhost:3000/api/vapi/inventory')
+    const response = await fetch('http://localhost:3001/api/vapi/inventory')
     const data = await response.json()
 
     console.log('✅ Inventory loaded!')
@@ -67,14 +67,14 @@ async function testInventoryEndpoint() {
 
 async function runTests() {
   console.log('🚀 Testing Vapi Integration with Real Data')
-  console.log('Make sure your Nuxt dev server is running on localhost:3000\n')
+  console.log('Make sure your Nuxt dev server is running on localhost:3001\n')
 
   // Test inventory first
   await testInventoryEndpoint()
 
   // Test search queries
   for (const query of testQueries) {
-    await testQueries(query)
+    await testVapiEndpoint(query)
     await new Promise((resolve) => setTimeout(resolve, 1000)) // Wait 1 second between tests
   }
 

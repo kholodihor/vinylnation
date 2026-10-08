@@ -1,5 +1,3 @@
-import { sendKafkaEvent } from '../../utils/kafka'
-
 export default defineEventHandler(async (event) => {
   try {
     const { query } = await readBody(event)

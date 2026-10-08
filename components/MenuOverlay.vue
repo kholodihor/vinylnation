@@ -2,7 +2,7 @@
   <div id="MenuOverlay" class="fixed z-50 bottom-0 h-full w-full bg-white px-3">
     <div class="flex items-center justify-between py-5">
       <NuxtLink to="/" @click="userStore.isMenuOverlay = false">
-        <img width="170" src="/logo.png" />
+        <img width="170" src="/logo.png" alt="Vinyl Nation Logo" />
       </NuxtLink>
 
       <button class="rounded-full p-1 hover:bg-gray-200" @click="userStore.isMenuOverlay = false">
@@ -14,7 +14,7 @@
       <ul class="w-full">
         <li
           class="relative flex items-center justify-between py-2.5 border-b px-3 hover:bg-gray-100 cursor-pointer"
-          @click="goTo('orders')"
+          @click="goTo('/orders')"
         >
           <div class="flex items-center text-[20px] font-semibold">
             <Icon name="ph:pen-light" size="33" />
@@ -24,7 +24,7 @@
 
         <li
           class="relative flex items-center justify-between py-2.5 border-b px-3 hover:bg-gray-100 cursor-pointer"
-          @click="goTo('shoppingcart')"
+          @click="goTo('/cart')"
         >
           <div class="flex items-center text-[20px] font-semibold">
             <Icon name="ph:shopping-cart-simple-light" size="33" />
@@ -40,7 +40,7 @@
         <li
           v-if="user"
           class="relative flex items-center justify-between py-2.5 border-b px-3 hover:bg-gray-100 cursor-pointer"
-          @click="signOut()"
+          @click="signOut"
         >
           <div class="flex items-center text-[20px] font-semibold">
             <Icon name="ph:sign-out-light" size="33" />
@@ -51,7 +51,7 @@
         <li
           v-else
           class="relative flex items-center justify-between py-2.5 border-b px-3 hover:bg-gray-100 cursor-pointer"
-          @click="signIn()"
+          @click="goTo('/auth')"
         >
           <div class="flex items-center text-[20px] font-semibold">
             <Icon name="ph:sign-in-light" size="33" />
@@ -63,25 +63,18 @@
   </div>
 </template>
 
-<script setup>
-  import { useUserStore } from '~/stores/user'
+<script setup lang="ts">
   const userStore = useUserStore()
   const client = useSupabaseClient()
   const user = useSupabaseUser()
 
-  const goTo = (url) => {
+  const goTo = (path: string) => {
     userStore.isMenuOverlay = false
-    return navigateTo(`/${url}`)
+    return navigateTo(path)
   }
 
-  const signOut = () => {
-    client.auth.signOut()
-    userStore.isMenuOverlay = false
-    return navigateTo('/')
-  }
-
-  const signIn = () => {
-    userStore.isMenuOverlay = false
-    return navigateTo('/auth')
+  const signOut = async () => {
+    await client.auth.signOut()
+    return goTo('/')
   }
 </script>

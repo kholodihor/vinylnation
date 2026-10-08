@@ -23,7 +23,7 @@
       <div class="p-3 sm:p-4">
         <div class="flex items-center justify-between mb-1.5 sm:mb-2">
           <span class="text-base sm:text-lg font-semibold text-[#f8d210]">
-            ${{ priceComputed }}
+            ${{ formatPrice(product.price) }}
           </span>
           <div class="opacity-0 group-hover:opacity-100 transition-opacity">
             <Icon
@@ -44,13 +44,7 @@
 <script setup lang="ts">
   import type { IProduct } from '~/types'
 
-  const props = defineProps<{
+  defineProps<{
     product: IProduct
   }>()
-
-  const { product } = toRefs(props)
-
-  const priceComputed = computed(() => {
-    return product.value.price / 100
-  })
 </script>

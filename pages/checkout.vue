@@ -34,7 +34,7 @@
                 </div>
                 <div class="flex items-center gap-3 text-sm">
                   <span class="text-gray-500 w-28">Zip Code:</span>
-                  <span class="font-medium text-gray-900">{{ currentAddress.zipCode }}</span>
+                  <span class="font-medium text-gray-900">{{ currentAddress.zipcode }}</span>
                 </div>
                 <div class="flex items-center gap-3 text-sm">
                   <span class="text-gray-500 w-28">City:</span>
@@ -61,9 +61,7 @@
           <div class="bg-white rounded-lg p-6 mt-6 shadow-sm">
             <h2 class="text-xl font-semibold mb-4">Order Items</h2>
             <div class="divide-y divide-gray-200">
-              <div v-for="product in userStore.cart" :key="product.id">
-                <CheckoutItem :product="product" />
-              </div>
+              <CheckoutItem v-for="product in items" :key="product.id" :product="product" />
             </div>
           </div>
         </div>
@@ -76,7 +74,7 @@
             <div class="space-y-4 mb-6">
               <div class="flex items-center justify-between text-sm">
                 <span class="text-gray-600">Subtotal</span>
-                <span class="font-medium">${{ (total / 100).toFixed(2) }}</span>
+                <span class="font-medium">${{ formatPrice(total) }}</span>
               </div>
               <div class="flex items-center justify-between text-sm">
                 <span class="text-gray-600">Shipping</span>
@@ -86,9 +84,7 @@
                 <div class="flex items-center justify-between">
                   <span class="text-gray-900 font-semibold">Total to pay</span>
                   <div class="text-right">
-                    <div class="text-2xl font-bold text-gray-900">
-                      ${{ (total / 100).toFixed(2) }}
-                    </div>
+                    <div class="text-2xl font-bold text-gray-900">${{ formatPrice(total) }}</div>
                     <div class="text-xs text-gray-500">Including VAT</div>
                   </div>
                 </div>
@@ -106,18 +102,19 @@
               </div>
 
               <div
-                id="card-element"
+                ref="cardElementRef"
                 class="border border-gray-300 p-3 rounded-lg mb-4 bg-white shadow-sm"
               ></div>
 
               <p
-                id="card-error"
                 role="alert"
                 class="text-red-600 text-center text-sm font-medium min-h-[20px] mb-4"
-              ></p>
+              >
+                {{ errorMessage }}
+              </p>
 
               <button
-                :disabled="isProcessing"
+                :disabled="isProcessing || !card"
                 type="submit"
                 class="w-full flex items-center justify-center bg-[#f8d210] hover:bg-[#e5c20f] text-black font-semibold text-lg py-3 px-6 rounded-lg transition-colors"
                 :class="isProcessing ? 'opacity-70 cursor-not-allowed' : 'opacity-100'"
@@ -135,103 +132,76 @@
 
 <script setup lang="ts">
   import { loadStripe } from '@stripe/stripe-js'
+  import type { Stripe, StripeCardElement } from '@stripe/stripe-js'
   import type { IAddress } from '~/types'
-  import { useUserStore } from '~/stores/user'
 
   const userStore = useUserStore()
-  const user = useSupabaseUser()
-  const route = useRoute()
   const runtimeConfig = useRuntimeConfig()
 
-  definePageMeta({ middleware: 'auth' })
+  const items = computed(() => userStore.checkout)
+  const total = computed(() => items.value.reduce((sum, item) => sum + item.price, 0))
 
-  let stripe: any = null
-  let elements: any = null
-  let card: any = null
-  let clientSecret: string | null = ''
-  const total = ref(0)
-  const currentAddress = ref<IAddress | null>(null)
+  const { data: currentAddress } = await useFetch<IAddress | null>('/api/address')
+
+  const cardElementRef = ref<HTMLElement | null>(null)
+  const card = shallowRef<StripeCardElement | null>(null)
+  const errorMessage = ref('')
   const isProcessing = ref(false)
 
-  onBeforeMount(async () => {
-    if (userStore.cart.length < 1) {
+  let stripe: Stripe | null = null
+  let clientSecret: string | null = null
+  let errorTimer: ReturnType<typeof setTimeout> | undefined
+
+  const showError = (message: string) => {
+    errorMessage.value = message.includes('test mode')
+      ? 'Please use the test card number shown above.'
+      : message
+    clearTimeout(errorTimer)
+    errorTimer = setTimeout(() => (errorMessage.value = ''), 6000)
+  }
+
+  onMounted(async () => {
+    // Checkout state lives in localStorage, so this check is client-only
+    if (!items.value.length) {
       return navigateTo('/cart')
     }
 
-    // Calculate total from cart items
-    total.value = userStore.cart.reduce((sum, item) => sum + item.price, 0)
-
-    if (user.value) {
-      const res = await useFetch<IAddress>(`/api/prisma/get-address-by-user/${user.value.id}`)
-      currentAddress.value = res.data.value
-      setTimeout(() => (userStore.isLoading = false), 200)
-    }
-  })
-
-  onMounted(async () => {
-    isProcessing.value = false
-    if (total.value > 0) {
-      await stripeInit()
-    }
-  })
-
-  const stripeInit = async () => {
     try {
-      // Initialize Stripe
-      stripe = await loadStripe(runtimeConfig.public.stripePk)
+      stripe = await loadStripe(runtimeConfig.public.stripePk as string)
+      if (!stripe) throw new Error('Stripe failed to load')
 
-      // Create payment intent
-      const res = await $fetch('/api/stripe/paymentintent', {
+      const res = await $fetch('/api/stripe/payment-intent', {
         method: 'POST',
-        body: {
-          amount: total.value,
-        },
+        body: { productIds: items.value.map((item) => item.id) },
       })
+      clientSecret = res.clientSecret
 
-      clientSecret = res.client_secret
-
-      // Create elements instance
-      elements = stripe.elements()
-
-      // Create and mount the card element
-      const style = {
-        base: {
-          fontSize: '16px',
-          color: '#32325d',
-          fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
-          fontSmoothing: 'antialiased',
-          '::placeholder': {
-            color: '#aab7c4',
+      const cardElement = stripe.elements().create('card', {
+        style: {
+          base: {
+            fontSize: '16px',
+            color: '#32325d',
+            fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+            fontSmoothing: 'antialiased',
+            '::placeholder': { color: '#aab7c4' },
           },
+          invalid: { color: '#fa755a', iconColor: '#fa755a' },
         },
-        invalid: {
-          color: '#fa755a',
-          iconColor: '#fa755a',
-        },
-      }
-
-      const cardElement = elements.create('card', { style })
-      cardElement.mount('#card-element')
-
-      // Handle real-time validation errors
-      cardElement.on('change', (event: any) => {
-        const displayError = document.getElementById('card-error')
-        if (displayError) {
-          displayError.textContent = event.error ? event.error.message : ''
-        }
       })
-
-      card = cardElement
-    } catch (error) {
+      cardElement.mount(cardElementRef.value!)
+      cardElement.on('change', (event) => {
+        errorMessage.value = event.error?.message ?? ''
+      })
+      card.value = cardElement
+    } catch (error: any) {
       console.error('Stripe initialization error:', error)
-      showError('Failed to initialize payment system')
+      showError(error?.data?.message || 'Failed to initialize payment system')
     }
-  }
+  })
 
-  watchEffect(() => {
-    if (route.fullPath === '/checkout' && !user.value) {
-      return navigateTo('/auth')
-    }
+  onBeforeUnmount(() => {
+    clearTimeout(errorTimer)
+    card.value?.destroy()
   })
 
   const pay = async () => {
@@ -239,51 +209,29 @@
       showError('Please add shipping address')
       return
     }
+    if (!stripe || !card.value || !clientSecret) return
+
     isProcessing.value = true
-
-    const result = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: { card },
-    })
-    if (result.error) {
-      showError(result.error.message)
-      isProcessing.value = false
-    } else {
-      await createOrder(result.paymentIntent.id)
-      userStore.cart = []
-      userStore.checkout = []
-      setTimeout(() => {
-        return navigateTo('/success')
-      }, 500)
-    }
-  }
-
-  const createOrder = async (stripeId: string) => {
-    if (user.value && currentAddress.value) {
-      await useFetch('/api/prisma/create-order', {
-        method: 'POST',
-        body: {
-          userId: user.value.id,
-          stripeId,
-          name: currentAddress.value.name,
-          address: currentAddress.value.address,
-          zipcode: currentAddress.value.zipCode,
-          city: currentAddress.value.city,
-          country: currentAddress.value.country,
-          products: userStore.cart,
-        },
+    try {
+      const result = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: { card: card.value },
       })
-    }
-  }
+      if (result.error) {
+        showError(result.error.message ?? 'Payment failed')
+        return
+      }
 
-  const showError = (errorMessage: string) => {
-    const errorElement = document.getElementById('card-error')
-    if (errorElement) {
-      errorElement.textContent = errorMessage.includes('test mode')
-        ? 'Please use the test card number shown above.'
-        : errorMessage
-      setTimeout(() => {
-        errorElement.textContent = ''
-      }, 6000)
+      await $fetch('/api/orders', {
+        method: 'POST',
+        body: { paymentIntentId: result.paymentIntent.id },
+      })
+      userStore.completeCheckout()
+      await navigateTo('/success')
+    } catch (error: any) {
+      console.error('Order error:', error)
+      showError(error?.data?.message || 'Payment succeeded but the order could not be saved')
+    } finally {
+      isProcessing.value = false
     }
   }
 </script>
