@@ -57,7 +57,7 @@
               :error="error && error.type === 'price' ? error.message : ''"
             />
             <p class="mt-1 text-xs text-gray-500">
-              Preview: ${{ form.price ? (parseInt(form.price) / 100).toFixed(2) : '0.00' }}
+              Preview: ${{ formatPrice(parseInt(form.price) || 0) }}
             </p>
           </div>
 
@@ -69,6 +69,8 @@
               :error="error && error.type === 'description' ? error.message : ''"
             />
           </div>
+
+          <p v-if="submitError" class="text-sm text-red-600">{{ submitError }}</p>
 
           <div class="pt-2">
             <button
@@ -91,76 +93,61 @@
 
 <script setup lang="ts">
   import type { IError } from '~/types'
-  import { useUserStore } from '~/stores/user'
 
-  const userStore = useUserStore()
+  type Field = 'title' | 'genre' | 'description' | 'imageUrl' | 'price'
+
+  const REQUIRED: Array<[Field, string]> = [
+    ['title', 'Please enter a title'],
+    ['genre', 'Please enter a genre'],
+    ['description', 'Please enter a description'],
+    ['imageUrl', 'Please enter an image URL'],
+    ['price', 'Please enter a price'],
+  ]
+
   const error = ref<IError | null>(null)
+  const submitError = ref('')
   const isSubmitting = ref(false)
 
-  const form = reactive({
+  const form = reactive<Record<Field, string>>({
     title: '',
     genre: '',
     imageUrl: '',
     description: '',
     price: '',
-    quantity: 3,
   })
 
-  onBeforeMount(() => {
-    setTimeout(() => (userStore.isLoading = false), 1000)
-  })
+  const validate = (): IError | null => {
+    const missing = REQUIRED.find(([field]) => !form[field].trim())
+    if (missing) return { type: missing[0], message: missing[1] }
+    const price = Number(form.price)
+    if (!Number.isInteger(price) || price <= 0) {
+      return { type: 'price', message: 'Price must be a whole number of cents above 0' }
+    }
+    return null
+  }
 
   const addProduct = async () => {
+    submitError.value = ''
+    error.value = validate()
+    if (error.value) return
+
     isSubmitting.value = true
-    error.value = null
-
-    if (!form.title) {
-      error.value = {
-        type: 'title',
-        message: 'Please enter a title',
-      }
-    } else if (!form.genre) {
-      error.value = {
-        type: 'genre',
-        message: 'Please enter a genre',
-      }
-    } else if (!form.description) {
-      error.value = {
-        type: 'description',
-        message: 'Please enter a description',
-      }
-    } else if (!form.imageUrl) {
-      error.value = {
-        type: 'imageUrl',
-        message: 'Please enter an image URL',
-      }
-    } else if (!form.price) {
-      error.value = {
-        type: 'price',
-        message: 'Please enter a price',
-      }
-    }
-
-    if (error.value) {
-      isSubmitting.value = false
-      return
-    }
-
     try {
-      await $fetch('/api/prisma/add-product', {
+      const product = await $fetch('/api/products', {
         method: 'POST',
         body: {
           title: form.title,
           description: form.description,
           url: form.imageUrl,
-          price: parseInt(form.price),
+          price: Number(form.price),
           genre: form.genre,
+          quantity: 3,
         },
       })
-
-      navigateTo('/main')
-    } catch (err) {
-      console.log(err)
+      await refreshNuxtData('products-all')
+      await navigateTo(`/item/${product.id}`)
+    } catch (err: any) {
+      submitError.value = err?.data?.message || 'Could not add the vinyl'
     } finally {
       isSubmitting.value = false
     }

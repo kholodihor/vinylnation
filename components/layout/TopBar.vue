@@ -30,7 +30,7 @@
             <Icon v-if="!user" name="ph:user-thin" size="17" />
             <img
               v-else
-              :src="user.user_metadata.avatar_url"
+              :src="user.user_metadata?.avatar_url"
               class="w-8 h-8 rounded-full border-2 border-transparent group-hover:border-[#f8d210] transition-colors"
               :alt="user.email"
             />
@@ -64,7 +64,7 @@
               </NuxtLink>
               <button
                 class="w-full text-left px-4 py-2.5 hover:bg-red-50 text-sm text-red-600 transition-colors"
-                @click="client.auth.signOut()"
+                @click="signOut"
               >
                 Sign out
               </button>
@@ -80,4 +80,9 @@
   const client = useSupabaseClient()
   const user = useSupabaseUser()
   const isAccountMenu = ref(false)
+
+  const signOut = async () => {
+    await client.auth.signOut()
+    await navigateTo('/')
+  }
 </script>

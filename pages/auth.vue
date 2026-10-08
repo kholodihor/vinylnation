@@ -54,7 +54,9 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+  import type { Provider } from '@supabase/supabase-js'
+
   const client = useSupabaseClient()
   const user = useSupabaseUser()
 
@@ -64,10 +66,11 @@
     }
   })
 
-  const login = async (prov) => {
-    await client.auth.signInWithOAuth({
-      provider: prov,
-      redirectTo: window.location.origin,
+  const login = async (provider: Provider) => {
+    const { error } = await client.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/auth` },
     })
+    if (error) console.error('OAuth sign-in failed:', error)
   }
 </script>

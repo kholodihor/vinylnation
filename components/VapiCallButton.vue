@@ -1,7 +1,4 @@
 <script setup lang="ts">
-  import { computed } from 'vue'
-  import { useVapi } from '~/composables/useVapi'
-
   const { isCalling, toggleCall } = useVapi()
   const ariaLabel = computed(() => (isCalling.value ? 'End voice call' : 'Start voice call'))
 </script>
@@ -23,5 +20,3 @@
     </Teleport>
   </ClientOnly>
 </template>
-
-<style scoped></style>

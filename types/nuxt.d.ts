@@ -1,15 +1,9 @@
 import type Vapi from '@vapi-ai/web'
 
-// Augment Nuxt App and Vue to include $vapi
+// $getVapi is provided by plugins/vapi.client.ts (client only)
 declare module '#app' {
   interface NuxtApp {
-    $vapi: Vapi
-  }
-}
-
-declare module 'vue' {
-  interface ComponentCustomProperties {
-    $vapi: Vapi
+    $getVapi?: () => Promise<Vapi>
   }
 }
 

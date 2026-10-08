@@ -7,6 +7,7 @@
           class="w-full placeholder-gray-400 text-sm pl-4 focus:outline-none"
           placeholder="Find Your Favourite Vinyl"
           type="text"
+          @keyup.esc="searchItem = ''"
         />
         <Icon
           v-if="isSearching"
@@ -15,14 +16,17 @@
           class="mr-2 text-[#f8d210] animate-spin"
         />
         <button
-          class="flex items-center h-[100%] p-2 px-3 bg-[#f8d210] transition-colors rounded-top-right-md rounded-bottom-right-md"
+          type="button"
+          aria-label="Search"
+          class="flex items-center h-[100%] p-2 px-3 bg-[#f8d210] transition-colors rounded-r-md"
+          @click="search"
         >
           <Icon name="ph:magnifying-glass" size="20" color="#ffffff" />
         </button>
       </div>
 
       <div
-        v-if="items"
+        v-if="items?.length"
         class="absolute bg-white w-full mt-1 rounded-md border border-gray-200 shadow-lg overflow-hidden z-50 max-h-[80vh] overflow-y-auto"
       >
         <div class="p-2 space-y-1">
@@ -31,6 +35,7 @@
             :key="item.id"
             :to="`/item/${item.id}`"
             class="flex items-center justify-between w-full p-2 rounded-md hover:bg-gray-50 transition-colors"
+            @click="searchItem = ''"
           >
             <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
               <img
@@ -41,7 +46,7 @@
               <div class="truncate text-sm font-medium flex-1 min-w-0">{{ item.title }}</div>
             </div>
             <div class="text-sm font-medium text-[#f8d210] ml-2 flex-shrink-0">
-              ${{ item.price / 100 }}
+              ${{ formatPrice(item.price) }}
             </div>
           </NuxtLink>
         </div>
@@ -53,27 +58,34 @@
 <script setup lang="ts">
   import type { IProduct } from '~/types'
 
-  const isSearching = ref(false)
   const searchItem = ref('')
   const items = ref<IProduct[] | null>(null)
+  const isSearching = ref(false)
 
-  const searchByName = useDebounce(async () => {
-    isSearching.value = true
-    const res = await useFetch<IProduct[]>(`/api/prisma/search-by-name/${searchItem.value}`)
-    items.value = res.data.value
-    isSearching.value = false
-  }, 100)
+  let latestRequest = 0
 
-  watch(
-    () => searchItem.value,
-    () => {
-      if (!searchItem.value) {
-        setTimeout(() => {
-          items.value = null
-          isSearching.value = false
-        }, 500)
-      }
-      searchByName()
+  const search = async () => {
+    const q = searchItem.value.trim()
+    const requestId = ++latestRequest
+    if (!q) {
+      items.value = null
+      isSearching.value = false
+      return
     }
-  )
+
+    isSearching.value = true
+    try {
+      const res = await $fetch<{ items: IProduct[] }>('/api/products/search', {
+        query: { q, limit: 5 },
+      })
+      // Ignore responses that arrive after a newer search was started
+      if (requestId === latestRequest) items.value = res.items
+    } catch (error) {
+      console.error('Search failed:', error)
+    } finally {
+      if (requestId === latestRequest) isSearching.value = false
+    }
+  }
+
+  watch(searchItem, useDebounce(search, 250))
 </script>

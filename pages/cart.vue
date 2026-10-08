@@ -49,9 +49,9 @@
             <div v-for="product in userStore.cart" :key="product.id">
               <CartItem
                 :product="product"
-                :selected-array="selectedArray"
-                @selected-radio="selectedRadioFunc"
-                @remove-from-cart="removeFromCart"
+                :selected="selectedIds.has(product.id)"
+                @toggle="toggleSelected(product.id)"
+                @remove="userStore.removeFromCart(product.id)"
               />
             </div>
           </div>
@@ -71,7 +71,7 @@
             <div class="space-y-3">
               <div class="flex items-center justify-between text-sm">
                 <span class="text-gray-600">Subtotal</span>
-                <span class="font-medium">${{ totalPriceComputed }}</span>
+                <span class="font-medium">${{ formatPrice(total) }}</span>
               </div>
               <div class="flex items-center justify-between text-sm">
                 <span class="text-gray-600">Shipping</span>
@@ -80,13 +80,17 @@
               <div class="border-t pt-3">
                 <div class="flex items-center justify-between">
                   <span class="font-semibold">Total</span>
-                  <div class="text-xl sm:text-2xl font-bold">${{ totalPriceComputed }}</div>
+                  <div class="text-xl sm:text-2xl font-bold">${{ formatPrice(total) }}</div>
                 </div>
               </div>
             </div>
 
+            <p v-if="!selectedIds.size" class="mt-4 text-sm text-gray-500">
+              Select the items you want to buy.
+            </p>
             <button
-              class="w-full bg-[#f8d210] hover:bg-[#e5c20f] text-black font-medium text-lg sm:text-xl py-3 px-6 rounded-lg mt-6 transition-colors flex items-center justify-center gap-2"
+              :disabled="!selectedIds.size"
+              class="w-full bg-[#f8d210] hover:bg-[#e5c20f] disabled:opacity-50 disabled:cursor-not-allowed text-black font-medium text-lg sm:text-xl py-3 px-6 rounded-lg mt-6 transition-colors flex items-center justify-center gap-2"
               @click="goToCheckout"
             >
               <span>Checkout</span>
@@ -98,11 +102,11 @@
             <h3 class="text-base sm:text-lg font-semibold mb-4">We Accept</h3>
             <div class="flex items-center flex-wrap gap-4">
               <img
-                v-for="(card, index) in cards"
-                :key="index"
+                v-for="card in cards"
+                :key="card"
                 class="h-6 sm:h-7"
-                :src="card"
-                :alt="card.split('/')[1].split('.')[0]"
+                :src="`/cards/${card}.png`"
+                :alt="card"
               />
             </div>
           </div>
@@ -113,62 +117,31 @@
 </template>
 
 <script setup lang="ts">
-  import { navigateTo } from 'nuxt/app'
-  import type { IProduct } from '~/types'
-  import { useUserStore } from '~/stores/user'
-
   const userStore = useUserStore()
   const user = useSupabaseUser()
-  const selectedArray = ref<IProduct[]>([])
 
-  onMounted(() => {
-    setTimeout(() => (userStore.isLoading = false), 200)
-  })
+  const cards = ['visa', 'mastercard', 'paypal', 'applepay']
 
-  const cards = ref([
-    'cards/visa.png',
-    'cards/mastercard.png',
-    'cards/paypal.png',
-    'cards/applepay.png',
-  ])
+  // Pre-select whatever was chosen for the last (unfinished) checkout
+  const selectedIds = ref(new Set(userStore.checkout.map((item) => item.id)))
 
-  const totalPriceComputed = computed(() => {
-    let price = 0
-    userStore.cart.forEach((prod) => {
-      price += prod.price
-    })
-    return price / 100
-  })
+  const selectedItems = computed(() =>
+    userStore.cart.filter((item) => selectedIds.value.has(item.id))
+  )
 
-  const selectedRadioFunc = (e: IProduct) => {
-    const index = selectedArray.value.findIndex((item) => item.id === e.id)
-    if (index === -1) {
-      selectedArray.value.push(e)
-    } else {
-      selectedArray.value.splice(index, 1)
-    }
+  // Summary reflects what will actually be charged: the selected items
+  const total = computed(() => selectedItems.value.reduce((sum, item) => sum + item.price, 0))
+
+  const toggleSelected = (id: number) => {
+    const next = new Set(selectedIds.value)
+    if (!next.delete(id)) next.add(id)
+    selectedIds.value = next
   }
 
-  const removeFromCart = (product: IProduct) => {
-    userStore.cart = userStore.cart.filter((item) => item.id !== product.id)
-    // Also remove from selected array if it was selected
-    selectedArray.value = selectedArray.value.filter((item) => item.id !== product.id)
-  }
-
-  const goToCheckout = async () => {
-    if (!selectedArray.value.length) {
-      alert('Please select at least one item to checkout')
-      return
-    }
-    const ids = selectedArray.value.map((item) => item.id)
-    // Set selected items as checkout items
-    userStore.checkout = [...selectedArray.value]
-    await navigateTo({
-      path: '/checkout',
-      query: {
-        items: ids.join(','),
-      },
-    })
+  const goToCheckout = () => {
+    if (!selectedItems.value.length) return
+    userStore.checkout = [...selectedItems.value]
+    return navigateTo('/checkout')
   }
 </script>
 

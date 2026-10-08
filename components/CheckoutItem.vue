@@ -14,7 +14,7 @@
           {{ product.description }}
         </p>
         <div class="flex items-center justify-between">
-          <div class="text-lg font-bold text-gray-900">${{ (product.price / 100).toFixed(2) }}</div>
+          <div class="text-lg font-bold text-gray-900">${{ formatPrice(product.price) }}</div>
           <div class="text-sm text-gray-500">Qty: 1</div>
         </div>
       </div>
@@ -25,9 +25,7 @@
 <script setup lang="ts">
   import type { IProduct } from '~/types'
 
-  const props = defineProps<{
+  defineProps<{
     product: IProduct
   }>()
-
-  const { product } = toRefs(props)
 </script>

@@ -90,10 +90,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
-
-  // Type definitions for API response
-  import type { VapiSearchResponse } from '~/types'
+  import type { IAssistantSummary } from '~/types'
 
   const examples = [
     'What products do you have in stock?',
@@ -107,7 +104,7 @@
   ]
   const error = ref('')
   const loading = ref(false)
-  const results = ref<{ message: string; albums?: any[]; suggestions?: string[] } | null>(null)
+  const results = ref<IAssistantSummary | null>(null)
   const customQuery = ref('')
 
   const { searchAlbums } = useVapi()
@@ -120,13 +117,11 @@
     results.value = null
 
     try {
-      const response = (await searchAlbums(query)) as VapiSearchResponse
+      const response = await searchAlbums(query)
 
-      // Check if response has error property (any error case)
       if ('error' in response) {
         error.value = response.error
-      } else if ('success' in response && response.success && 'data' in response) {
-        // Success case with data
+      } else if (response.success) {
         results.value = response.data.summary
       } else {
         error.value = 'Invalid response format'

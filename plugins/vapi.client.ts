@@ -1,16 +1,17 @@
-import Vapi from '@vapi-ai/web'
+import type Vapi from '@vapi-ai/web'
 
 export default defineNuxtPlugin(() => {
-  // Client-only plugin (file uses .client.ts suffix)
   const config = useRuntimeConfig()
-  const token = (config.public.vapiToken as string | undefined) ?? ''
+  let instance: Promise<Vapi> | null = null
 
-  // Create a singleton Vapi instance exposed via Nuxt provide/inject
-  const vapi = new Vapi(token)
+  // The Vapi SDK (with its WebRTC dependencies) is large, so it is only
+  // downloaded the first time a call is started
+  const getVapi = () =>
+    (instance ??= import('@vapi-ai/web').then(
+      ({ default: VapiClient }) => new VapiClient((config.public.vapiToken as string) ?? '')
+    ))
 
   return {
-    provide: {
-      vapi,
-    },
+    provide: { getVapi },
   }
 })

@@ -29,7 +29,7 @@
 
             <div class="border-t pt-4">
               <div class="flex items-center gap-4">
-                <div class="text-2xl sm:text-3xl font-bold">${{ priceComputed }}</div>
+                <div class="text-2xl sm:text-3xl font-bold">${{ formatPrice(product.price) }}</div>
                 <div class="text-[#009A66] text-sm font-medium">Free Shipping</div>
               </div>
 
@@ -63,7 +63,7 @@
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'bg-[#f8d210] hover:bg-[#e5c20f] text-black',
                 ]"
-                @click="addToCart()"
+                @click="userStore.addToCart(product)"
               >
                 <div class="flex items-center justify-center gap-2">
                   <Icon
@@ -78,6 +78,13 @@
                 </div>
               </button>
             </div>
+          </div>
+
+          <div v-else-if="error" class="text-center text-gray-600 py-10">
+            This vinyl could not be found.
+            <NuxtLink to="/" class="block mt-2 text-[#f8d210] hover:underline">
+              ← Back to shopping
+            </NuxtLink>
           </div>
 
           <div v-else class="animate-pulse space-y-4">
@@ -97,40 +104,15 @@
 
 <script setup lang="ts">
   import type { IProduct } from '~/types'
-  import { useUserStore } from '~/stores/user'
 
   const userStore = useUserStore()
   const route = useRoute()
-  const product = ref<IProduct | null>(null)
 
-  onBeforeMount(async () => {
-    const res = await useFetch<IProduct>(`/api/prisma/get-product-by-id/${route.params.id}`)
-    setTimeout(() => (userStore.isLoading = false), 1000)
-    product.value = res.data.value
-  })
+  const { data: product, error } = await useFetch<IProduct>(`/api/products/${route.params.id}`)
 
-  const isInCart = computed(() => {
-    let res = false
-    userStore.cart.forEach((prod: IProduct) => {
-      if (route.params.id === prod?.id.toString()) {
-        res = true
-      }
-    })
-    return res
-  })
+  useHead({ title: () => (product.value ? `${product.value.title} | VinylNation` : 'VinylNation') })
 
-  const priceComputed = computed(() => {
-    if (product.value) {
-      return product.value.price / 100
-    }
-    return '0.00'
-  })
-
-  const addToCart = () => {
-    if (product.value) {
-      userStore.cart.push(product.value)
-    }
-  }
+  const isInCart = computed(() => !!product.value && userStore.isInCart(product.value.id))
 </script>
 
 <style scoped>

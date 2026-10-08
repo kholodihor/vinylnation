@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import type { Products } from '@prisma/client'
 
 export default defineEventHandler(async () => {
   try {
@@ -27,17 +25,18 @@ export default defineEventHandler(async () => {
         }),
       ])
 
-    const totalQuantity = await prisma.products.aggregate({
-      _sum: { quantity: true },
-      where: { quantity: { gt: 0 } },
-    })
-
-    const priceStats = await prisma.products.aggregate({
-      _min: { price: true },
-      _max: { price: true },
-      _avg: { price: true },
-      where: { quantity: { gt: 0 } },
-    })
+    const [totalQuantity, priceStats] = await Promise.all([
+      prisma.products.aggregate({
+        _sum: { quantity: true },
+        where: { quantity: { gt: 0 } },
+      }),
+      prisma.products.aggregate({
+        _min: { price: true },
+        _max: { price: true },
+        _avg: { price: true },
+        where: { quantity: { gt: 0 } },
+      }),
+    ])
 
     return {
       inventory: {
@@ -69,12 +68,10 @@ export default defineEventHandler(async () => {
   } catch (error) {
     console.error('Inventory error:', error)
     throw createError({ statusCode: 500, message: 'Error fetching inventory' })
-  } finally {
-    await prisma.$disconnect()
   }
 })
 
-function formatProduct(product: any) {
+function formatProduct(product: Products) {
   const titleParts = product.title.split(' - ')
   const artist = titleParts.length > 1 ? titleParts[0] : 'Various Artists'
   const album = titleParts.length > 1 ? titleParts.slice(1).join(' - ') : product.title

@@ -5,14 +5,13 @@ declare global {
   var __prisma: PrismaClient | undefined
 }
 
-const prisma =
-  globalThis.__prisma ||
+// Single shared client; reused across HMR reloads in development
+export const prisma =
+  globalThis.__prisma ??
   new PrismaClient({
-    log: ['query', 'info', 'warn', 'error'],
+    log: process.env.NODE_ENV === 'development' ? ['query', 'warn', 'error'] : ['error'],
   })
 
 if (process.env.NODE_ENV === 'development') {
   globalThis.__prisma = prisma
 }
-
-export default prisma

@@ -1,5 +1,5 @@
 // Debug script to test Vapi search functionality
-// Run with: node debug-vapi-search.js
+// Run with: node scripts/debug-vapi-search.js
 
 async function testSearch(query) {
   console.log(`\n🔍 Testing: "${query}"`)
